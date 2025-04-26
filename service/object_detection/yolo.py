@@ -3,6 +3,10 @@ import cv2 as cv
 import numpy as np
 import tensorflow as tf
 
+THRESHOLD = 0.5  # Set your desired confidence threshold
+NMS_THRESHOLD = 0.5 # Intersection over Union threshold for Non Maximum Suppresion for bounding boxes
+all_frames_output = []
+
 # Load TFLite model
 interpreter = tf.lite.Interpreter(model_path='yolo11n_float32.tflite')
 interpreter.allocate_tensors()
@@ -24,13 +28,33 @@ class_names = ['person', 'bicycle', 'car', 'motorcycle', 'airplane', 'bus', 'tra
                'couch', 'potted plant', 'bed', 'dining table', 'toilet', 'tv', 'laptop', 'mouse', 'remote', 
                'keyboard', 'cell phone', 'microwave', 'oven', 'toaster', 'sink', 'refrigerator', 'book', 
                'clock', 'vase', 'scissors', 'teddy bear', 'hair drier', 'toothbrush']
+'''
+    Perform non maximum suppresion for multiple bounding boxes detected of many overlapping predictions.
+
+    Parameters
+    ----------
+    detected_object: list
+        A list of object/dictionary that contains the information of detected objects in a single frame.
+    
+    nms_threshold: float
+        The threshold for non maximum suppresion.
+    
+    Returns
+    -------
+    list
+        A list of indicies of bounding boxes that are kept after non maximum suppresions.
+'''
+def getNmsIndicies(detected_object_list, nms_threshold):
+    bboxes      = [list(detected_object["bbox"].values()) for detected_object in detected_object_list]
+    scores  = [detected_object["confidence"] for detected_object in detected_object_list]
+
+    indicies = cv.dnn.NMSBoxes(bboxes, scores, score_threshold=0.0, nms_threshold=nms_threshold)
+    return indicies
 
 cap = cv.VideoCapture(0)
 if not cap.isOpened():
     print("Cannot open camera")
     exit()
-
-THRESHOLD = 0.5  # Set your desired confidence threshold
 
 while True:
     ret, frame = cap.read()
@@ -53,19 +77,41 @@ while True:
 
     # Transpose to [8400, 80]
     class_probs = class_probs.T
+    boxes = boxes.T
+    single_frame_output = []
 
     for i in range(class_probs.shape[0]):
         class_id = np.argmax(class_probs[i])
         confidence = class_probs[i][class_id]
-
+  
         if confidence > THRESHOLD:
-            print(f"{class_names[class_id]}: {confidence:.2f}", end=", ")
+            detected_object = {
+                "class" : class_names[class_id], 
+                "confidence": float(confidence),
+                "bbox" : {
+                    # X center, Y center
+                    "x": float(boxes[class_id][0]),
+                    "y": float(boxes[class_id][1]),
+                    "w": float(boxes[class_id][2]),
+                    "h": float(boxes[class_id][3]),
+                }
+            }
+            single_frame_output.append(detected_object)
 
-    print()
+    if len(single_frame_output) > 0:
+        # Perform non maximum suppresion over 8400 predictions to remove overlaps
+        indicies = getNmsIndicies(single_frame_output, NMS_THRESHOLD)
+        filtered_output = [single_frame_output[i] for i in indicies]
+
+        all_frames_output.append(filtered_output)
+          # print(filtered_output)
+
+
     cv.imshow("Video", frame)
 
     if cv.waitKey(1) == ord('q'):
         break
 
+print(all_frames_output)
 cap.release()
 cv.destroyAllWindows()
