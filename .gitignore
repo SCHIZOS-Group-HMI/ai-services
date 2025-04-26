@@ -22,3 +22,6 @@ Thumbs.db
 # Video and imagegs
 *.mp4
 *.mp3
+
+audio_classification/yamnet_model/**
+!audio_classification/yamnet_model/README.md
