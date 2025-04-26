@@ -4,7 +4,6 @@ import tensorflow_hub as hub
 import numpy as np
 import csv
 import io
-import librosa
 import sounddevice as sd
 
 model = hub.load('https://www.kaggle.com/models/google/yamnet/TensorFlow2/yamnet/1')
@@ -21,7 +20,7 @@ def class_names_from_csv(class_map_csv_text):
 class_map_path = model.class_map_path().numpy()
 class_names = class_names_from_csv(tf.io.read_file(class_map_path).numpy().decode('utf-8'))
 
-SAMPLE_RATE = 16000 # bits per second
+SAMPLE_RATE = 16000 # samples per second 
 SAMPLE_TIME = 0.2
 CHUNK_SAMPLES = int(SAMPLE_RATE * SAMPLE_TIME)
 

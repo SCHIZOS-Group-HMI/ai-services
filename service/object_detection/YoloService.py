@@ -2,6 +2,7 @@ from ultralytics import YOLO
 import cv2 as cv
 import numpy as np
 import tensorflow as tf
+import os
 
 class YoloService:
     CLASS_NAMES = ['person', 'bicycle', 'car', 'motorcycle', 'airplane', 'bus', 'train', 'truck', 'boat', 
@@ -37,8 +38,9 @@ class YoloService:
         indicies = cv.dnn.NMSBoxes(bboxes, scores, score_threshold=0.0, nms_threshold=nms_threshold)
         return indicies
 
+        
     def __init__(self, DETECTION_THRESHOLD=0.5, NMS_THRESHOLD=0.5):
-        self.interpreter = tf.lite.Interpreter(model_path='yolo11n_float32.tflite')
+        self.interpreter = tf.lite.Interpreter(model_path='service/object_detection/yolo11n_float32.tflite')
         self.interpreter.allocate_tensors()
         self.input_details = self.interpreter.get_input_details()
         self.output_details = self.interpreter.get_output_details()
@@ -107,28 +109,28 @@ class YoloService:
         model_output = self.run_inference(model_input)
         return self.postprocess(model_output)
     
-if __name__ == "__main__":
-    detector = YoloService(0.8, 0.5)
-    cap = cv.VideoCapture(0)
+# if __name__ == "__main__":
+#     detector = YoloService(0.8, 0.5)
+#     cap = cv.VideoCapture(0)
 
-    if not cap.isOpened():
-        print("Cannot open camera")
-        exit()
+#     if not cap.isOpened():
+#         print("Cannot open camera")
+#         exit()
 
-    while True:
-        ret, frame = cap.read()
-        if not ret:
-            print("Cannot get frame")
-            break
+#     while True:
+#         ret, frame = cap.read()
+#         if not ret:
+#             print("Cannot get frame")
+#             break
 
-        result = detector.detect(frame)
+#         result = detector.detect(frame)
 
-        print(result)
+#         print(result)
 
-        cv.imshow("Video", frame)
+#         cv.imshow("Video", frame)
 
-        if cv.waitKey(1) == ord('q'):
-            break
+#         if cv.waitKey(1) == ord('q'):
+#             break
     
-    cap.release()
-    cv.destroyAllWindows()
+#     cap.release()
+#     cv.destroyAllWindows()
