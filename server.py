@@ -27,7 +27,9 @@ class audio(BaseModel):
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     from service.object_detection.YoloService import YoloService
+    from service.audio_classification.YamnetService import YamnetService
     app.state.yolo_model = YoloService(0.8, 0.5)
+    app.state.yamnet_model = YamnetService(0.5)
     yield
 
 app = FastAPI(lifespan=lifespan)
@@ -43,8 +45,17 @@ async def scanEnvironment(request: Request, scan_data: ScanData):
     image_bytes = base64.b64decode(scan_data.image)
     decoded_image = np.array(Image.open(io.BytesIO(image_bytes)))
 
-    model = request.app.state.yolo_model
-    result = model.detect(decoded_image)
+    obj_model = request.app.state.yolo_model
+    obj_result = obj_model.detect(decoded_image)
 
+    # 16-PCM format is already a waveform so only need to decode the encoded waveform to get waveform
+    waveform = base64.b64decode(scan_data.audio)
+    audio_model = request.app.state.yamnet_model
+    audio_result = audio_model.detect(waveform)
 
+    result = {
+        "object_detection": obj_result,
+        "audio_detection" : audio_result
+    }
+    
     return result
