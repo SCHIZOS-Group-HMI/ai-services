@@ -33,7 +33,7 @@ To use the Yamnet model for audio classification, you'll need to download the pr
 ## 2. Running the Server
 To run the FastAPI server, use the following command:
 ```bash
-fastapi dev .\server.py
+uvicorn server:app --host 0.0.0.0 --port 8000
 ```
 This will start the server locally. Once running, you can access the API at the typical FastAPI URL, usually http://127.0.0.1:8000, and the documentation will be available at http://127.0.0.1:8000/docs.
 
