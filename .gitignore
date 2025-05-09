@@ -25,5 +25,6 @@ Thumbs.db
 
 service/audio_classification/yamnet_model/*
 !service/audio_classification/yamnet_model/README.md
-
+ai-services-main/service/audio_classification/yamnet_model/*
+!ai-services-main/service/audio_classification/yamnet_model/README.md
 *.env

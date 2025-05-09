@@ -10,6 +10,7 @@ from fastapi import FastAPI, Request
 from pydantic import BaseModel
 from contextlib import asynccontextmanager
 from starlette.responses import JSONResponse
+import json
 
 class MetaData(BaseModel):
     sample_rate: int
@@ -29,9 +30,11 @@ class ScanData(BaseModel):
 async def lifespan(app: FastAPI):
     from service.object_detection.YoloService import YoloService
     from service.audio_classification.YamnetService import YamnetService
+    from service.chatbot.GeminiService import GeminiService
     # Giảm threshold YOLO xuống 0.3
     app.state.yolo_model = YoloService(0.3, 0.5)
     app.state.yamnet_model = YamnetService(0.3)
+    app.state.gemini_model = GeminiService()
     yield
 
 app = FastAPI(lifespan=lifespan)
@@ -71,4 +74,13 @@ async def scanEnvironment(request: Request, scan_data: ScanData):
     return {
         "object_detection": obj_result,
         "audio_detection": audio_result
+    }
+
+
+@app.post("/chat")
+async def getBotResponse(request: Request, inputData: dict):
+    inputDataString = json.dumps(inputData)
+    chat_response = request.app.state.gemini_model.getResponse(inputDataString)
+    return {
+        "chat_response": chat_response
     }

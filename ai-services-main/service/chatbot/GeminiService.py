@@ -49,8 +49,8 @@ DATA_STRUCTURE = ''' HERES THE DATA STRUCTURE{
         },
         ...
     ],
-    { # DETECTED AUDIO
-        "threshold" : self.THRESHOLD, # THRESHOLD OF SOUND DETECTION
+    { # DETECTED AUDIO:
+        "threshold" : self.THRESHOLD, # THRESHOLD OF SOUND DETECTION 
         "results"   : {
             "speech" : confidence score,
             "fan" : confidence score
@@ -60,54 +60,20 @@ DATA_STRUCTURE = ''' HERES THE DATA STRUCTURE{
 
 class GeminiService:
     def __init__(self):
-
-        pass
-
-if __name__ == "__main__":
-    SYSTEM_INSTRUCTION = BASE_INSTRUCTION + USE_CASE_0 + USE_CASE_1 + DATA_STRUCTURE
-    response = client.models.generate_content(
-        model="gemini-2.0-flash",
-        config=types.GenerateContentConfig(system_instruction=SYSTEM_INSTRUCTION),
-        contents=[
-            "User: "\
-            """mock_data = {
-    "objects": [
-        {
-            "class": "Person",  # Detected object class (e.g., a person)
-            "confidence": 0.85,  # Confidence in the detection
-            "bbox": {
-                "x": 0.5,  # Center X coordinate
-                "y": 0.5,  # Center Y coordinate
-                "w": 0.1,  # Width of the bounding box
-                "h": 0.2,  # Height of the bounding box
-            }
-        },
-        {
-            "class": "Dog",  # Detected object class (e.g., a dog)
-            "confidence": 0.78,  # Confidence in the detection
-            "bbox": {
-                "x": 0.7,  # Center X coordinate
-                "y": 0.8,  # Center Y coordinate
-                "w": 0.15,  # Width of the bounding box
-                "h": 0.2,  # Height of the bounding box
-            }
-        }
-    ],
-    "audio": {
-        "threshold": 0.5,  # Audio detection threshold (e.g., sound above this threshold is detected)
-        "results": [
-            {
-                "sound": "speech",  # Type of detected audio (e.g., speech)
-                "confidence": 0.92,  # Confidence in the audio detection
-            },
-            {
-                "sound": "ambient_noise",  # Type of detected audio (e.g., background noise)
-                "confidence": 0.75,  # Confidence in the audio detection
-            }
-        ]
-    }
-}
-"""
-        ],
-    )
-    print(response.text)
+        self.SYSTEM_INSTRUCTION = BASE_INSTRUCTION + USE_CASE_0 + USE_CASE_1 + DATA_STRUCTURE
+    
+    def sendQuery(self, query: str):
+        response = client.models.generate_content(
+            model="gemini-2.0-flash",
+            config=types.GenerateContentConfig(system_instruction=self.SYSTEM_INSTRUCTION),
+            contents=[query]
+        )
+        return response
+    
+    def getResponse(self, query: str):
+        response = self.sendQuery(query)
+        if not response:
+            return "GeminiSerivce.py: getResponse Error"
+        else:
+            return response.text
+        
