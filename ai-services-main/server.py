@@ -70,7 +70,7 @@ async def scanEnvironment(request: Request, scan_data: ScanData):
         dtype=np.float32
     )
     audio_result = request.app.state.yamnet_model.detect(waveform)
-
+    print(obj_result)
     return {
         "object_detection": obj_result,
         "audio_detection": audio_result

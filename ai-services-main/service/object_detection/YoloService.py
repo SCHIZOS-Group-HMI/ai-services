@@ -18,7 +18,7 @@ class YoloService:
     ]
 
     def __init__(self,
-                 DETECTION_THRESHOLD: float = 0.3,  # giảm ngưỡng xuống 0.3
+                 DETECTION_THRESHOLD: float = 0.3,
                  NMS_THRESHOLD: float = 0.5):
         # Load TFLite model
         self.interpreter = tf.lite.Interpreter(
